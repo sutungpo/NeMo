@@ -891,7 +891,7 @@ class _TarredAudioToTextDataset(IterableDataset):
             world_size=world_size,
             global_rank=global_rank,
         )
-
+        logging.debug(f"Audio tar filepaths: {audio_tar_filepaths}")
         # Put together WebDataset pipeline
         self._dataset = wds.DataPipeline(
             wds.SimpleShardList(urls=audio_tar_filepaths),

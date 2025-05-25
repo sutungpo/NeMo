@@ -326,10 +326,15 @@ def get_tarred_dataset(
         An instance of TarredAudioToBPEDataset or TarredAudioToCharDataset.
     """
     tarred_audio_filepaths = config['tarred_audio_filepaths']
+
+    logging.info(f"in get_tarred_dataset, tarred_audio_filepaths: {tarred_audio_filepaths}")
+
     manifest_filepaths = config['manifest_filepath']
     datasets = []
     tarred_audio_filepaths = convert_to_config_list(tarred_audio_filepaths)
     manifest_filepaths = convert_to_config_list(manifest_filepaths)
+
+    logging.info(f"in get_tarred_dataset, after converted, tarred_audio_filepaths: {tarred_audio_filepaths}")
 
     bucketing_weights = config.get('bucketing_weights', None)  # For upsampling buckets
     if bucketing_weights:
@@ -355,6 +360,8 @@ def get_tarred_dataset(
             tarred_audio_filepath = tarred_audio_filepath[0]
         if len(manifest_filepath) == 1:
             manifest_filepath = manifest_filepath[0]
+
+        logging.info(f"in get_tarred_dataset, for loop, tarred_audio_filepath: {tarred_audio_filepath}")
 
         if tokenizer is None:
             dataset = audio_to_text.TarredAudioToCharDataset(

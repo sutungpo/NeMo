@@ -520,9 +520,6 @@ class EncDecRNNTBPEModel(EncDecRNNTModel, ASRBPEMixin):
                 ),
                 tokenizer=self.tokenizer,
             )
-        
-        tar_audio_filepaths = config.get('tarred_audio_filepaths', None)
-        logging.info(f"in EncDecRNNTBPEModel tarred_audio_filepaths: {tar_audio_filepaths}")
 
         dataset = audio_to_text_dataset.get_audio_to_text_bpe_dataset_from_config(
             config=config,

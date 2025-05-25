@@ -885,16 +885,12 @@ class _TarredAudioToTextDataset(IterableDataset):
         self.pad_id = pad_id
         self.return_sample_id = return_sample_id
 
-        logging.info(f"in _TarredAudioToTextDataset initialization audio_tar_filepaths: {audio_tar_filepaths}")
-
         audio_tar_filepaths = expand_sharded_filepaths(
             sharded_filepaths=audio_tar_filepaths,
             shard_strategy=shard_strategy,
             world_size=world_size,
             global_rank=global_rank,
         )
-
-        logging.info(f"in _TarredAudioToTextDataset initialization after expand audio_tar_filepaths: {audio_tar_filepaths}")
 
         # Put together WebDataset pipeline
         self._dataset = wds.DataPipeline(
@@ -1312,8 +1308,6 @@ class TarredAudioToBPEDataset(_TarredAudioToTextDataset):
 
                 t = self._tokenizer.text_to_ids(*args)
                 return t
-
-        logging.info(f"in TarredAudioToBPEDataset initialization, audio_tar_filepaths: {audio_tar_filepaths}")
 
         super().__init__(
             audio_tar_filepaths=audio_tar_filepaths,

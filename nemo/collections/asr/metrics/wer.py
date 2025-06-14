@@ -206,6 +206,11 @@ def word_error_rate_per_utt(hypotheses: List[str], references: List[str], use_ce
 
     return wer_per_utt, avg_wer
 
+import jiwer
+from spacy import load as spacy_load
+from ginza import set_split_mode as ginza_set_split_mode
+nlp = spacy_load("ja_ginza")
+ginza_set_split_mode(nlp, "C")
 
 class WER(Metric):
     """
@@ -337,11 +342,12 @@ class WER(Metric):
                 h_list = list(h.text)
                 r_list = list(r)
             else:
-                h_list = h.text.split()
-                r_list = r.split()
-            words += len(r_list)
-            # Compute Levenstein's distance
-            scores += editdistance.eval(h_list, r_list)
+                doc_ref = nlp(r)
+                doc_hyp = nlp(h.text)
+                tokenized_ref = " ".join([token.text for token in doc_ref])
+                tokenized_hyp = " ".join([token.text for token in doc_hyp])
+            words += 1
+            scores += jiwer.compute_measures(tokenized_ref, tokenized_hyp)['wer']
 
         self.scores = torch.tensor(scores, device=self.scores.device, dtype=self.scores.dtype)
         self.words = torch.tensor(words, device=self.words.device, dtype=self.words.dtype)

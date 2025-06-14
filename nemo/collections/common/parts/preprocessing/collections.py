@@ -93,6 +93,70 @@ class FromFileText(Text):
         return texts
 
 
+class AudioTextEntity(tuple):
+    """
+    AudioTextEntity(id, audio_file, duration, text_tokens, offset, text_raw, speaker, orig_sr, lang)
+    """
+
+    # The __slots__ attribute prevents the creation of instance dictionaries,
+    # saving memory. Since it's an empty tuple, it reserves no space for
+    # additional attributes.
+    __slots__ = ()
+
+    # _fields is a class attribute that lists the field names in order.
+    _fields = ('id', 'audio_file', 'duration', 'text_tokens', 'offset', 'text_raw', 'speaker', 'orig_sr', 'lang')
+
+    def __new__(_cls, id, audio_file, duration, text_tokens, offset, text_raw, speaker, orig_sr, lang):
+        """Create new instance of AudioTextEntity(id, audio_file, duration, ...)"""
+        # Call the parent tuple's __new__ method to create an immutable tuple.
+        return super().__new__(_cls, (id, audio_file, duration, text_tokens, offset, text_raw, speaker, orig_sr, lang))
+
+    @classmethod
+    def _make(cls, iterable):
+        """Make a new AudioTextEntity object from a sequence or iterable."""
+        result = super().__new__(cls, iterable)
+        if len(result) != len(cls._fields):
+            raise TypeError(f'Expected {len(cls._fields)} arguments, got {len(result)}')
+        return result
+
+    def _replace(self, **kwargs):
+        """Return a new AudioTextEntity object replacing specified fields with new values."""
+        # Create a new tuple by taking values from the original tuple,
+        # but overriding them with any values provided in kwargs.
+        result = self._make(map(kwargs.pop, self._fields, self))
+        if kwargs:
+            raise ValueError(f'Got unexpected field names: {list(kwargs)!r}')
+        return result
+
+    def __repr__(self):
+        """Return a nicely formatted representation string."""
+        # This creates a string like 'AudioTextEntity(id=1, audio_file=...)'
+        field_values = (f'{name}={value!r}' for name, value in zip(self._fields, self))
+        return f'{self.__class__.__name__}({", ".join(field_values)})'
+
+    def _asdict(self):
+        """Return a new OrderedDict which maps field names to their values."""
+        return OrderedDict(zip(self._fields, self))
+
+    def __getnewargs__(self):
+        """Return self as a plain tuple. Used by copy and pickle."""
+        return tuple(self)
+        
+    # --- Field accessors ---
+    # For each field, a property is created that uses operator.itemgetter
+    # to efficiently retrieve the element at the correct index from the tuple.
+
+    id = property(operator.itemgetter(0), doc='Alias for field number 0')
+    audio_file = property(operator.itemgetter(1), doc='Alias for field number 1')
+    duration = property(operator.itemgetter(2), doc='Alias for field number 2')
+    text_tokens = property(operator.itemgetter(3), doc='Alias for field number 3')
+    offset = property(operator.itemgetter(4), doc='Alias for field number 4')
+    text_raw = property(operator.itemgetter(5), doc='Alias for field number 5')
+    speaker = property(operator.itemgetter(6), doc='Alias for field number 6')
+    orig_sr = property(operator.itemgetter(7), doc='Alias for field number 7')
+    lang = property(operator.itemgetter(8), doc='Alias for field number 8')
+
+
 class AudioText(_Collection):
     """List of audio-transcript text correspondence with preprocessing."""
 
@@ -2095,66 +2159,3 @@ class ASRFeatureText(FeatureText):
             *args,
             **kwargs,
         )
-
-class AudioTextEntity(tuple):
-    """
-    AudioTextEntity(id, audio_file, duration, text_tokens, offset, text_raw, speaker, orig_sr, lang)
-    """
-
-    # The __slots__ attribute prevents the creation of instance dictionaries,
-    # saving memory. Since it's an empty tuple, it reserves no space for
-    # additional attributes.
-    __slots__ = ()
-
-    # _fields is a class attribute that lists the field names in order.
-    _fields = ('id', 'audio_file', 'duration', 'text_tokens', 'offset', 'text_raw', 'speaker', 'orig_sr', 'lang')
-
-    def __new__(_cls, id, audio_file, duration, text_tokens, offset, text_raw, speaker, orig_sr, lang):
-        """Create new instance of AudioTextEntity(id, audio_file, duration, ...)"""
-        # Call the parent tuple's __new__ method to create an immutable tuple.
-        return super().__new__(_cls, (id, audio_file, duration, text_tokens, offset, text_raw, speaker, orig_sr, lang))
-
-    @classmethod
-    def _make(cls, iterable):
-        """Make a new AudioTextEntity object from a sequence or iterable."""
-        result = super().__new__(cls, iterable)
-        if len(result) != len(cls._fields):
-            raise TypeError(f'Expected {len(cls._fields)} arguments, got {len(result)}')
-        return result
-
-    def _replace(self, **kwargs):
-        """Return a new AudioTextEntity object replacing specified fields with new values."""
-        # Create a new tuple by taking values from the original tuple,
-        # but overriding them with any values provided in kwargs.
-        result = self._make(map(kwargs.pop, self._fields, self))
-        if kwargs:
-            raise ValueError(f'Got unexpected field names: {list(kwargs)!r}')
-        return result
-
-    def __repr__(self):
-        """Return a nicely formatted representation string."""
-        # This creates a string like 'AudioTextEntity(id=1, audio_file=...)'
-        field_values = (f'{name}={value!r}' for name, value in zip(self._fields, self))
-        return f'{self.__class__.__name__}({", ".join(field_values)})'
-
-    def _asdict(self):
-        """Return a new OrderedDict which maps field names to their values."""
-        return OrderedDict(zip(self._fields, self))
-
-    def __getnewargs__(self):
-        """Return self as a plain tuple. Used by copy and pickle."""
-        return tuple(self)
-        
-    # --- Field accessors ---
-    # For each field, a property is created that uses operator.itemgetter
-    # to efficiently retrieve the element at the correct index from the tuple.
-
-    id = property(operator.itemgetter(0), doc='Alias for field number 0')
-    audio_file = property(operator.itemgetter(1), doc='Alias for field number 1')
-    duration = property(operator.itemgetter(2), doc='Alias for field number 2')
-    text_tokens = property(operator.itemgetter(3), doc='Alias for field number 3')
-    offset = property(operator.itemgetter(4), doc='Alias for field number 4')
-    text_raw = property(operator.itemgetter(5), doc='Alias for field number 5')
-    speaker = property(operator.itemgetter(6), doc='Alias for field number 6')
-    orig_sr = property(operator.itemgetter(7), doc='Alias for field number 7')
-    lang = property(operator.itemgetter(8), doc='Alias for field number 8')

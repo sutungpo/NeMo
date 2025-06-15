@@ -34,7 +34,7 @@ class Dataset(data.Dataset, Typing, Serialization):
         """
         return data.dataloader.default_collate(batch)
 
-    @typecheck()
+    # @typecheck()
     def collate_fn(self, batch):
         """
         This is the method that user pass as functor to DataLoader.
@@ -59,7 +59,9 @@ class Dataset(data.Dataset, Typing, Serialization):
             raise TypeError("Datasets should not implement `input_types` as they are not checked")
 
         # Simply forward the inner `_collate_fn`
-        return self._collate_fn(batch)
+        outputs = self._collate_fn(batch)
+        self._attach_and_validate_output_types(out_objects=outputs, output_types=self.output_types)
+        return outputs
 
 
 class IterableDataset(data.IterableDataset, Typing, Serialization):

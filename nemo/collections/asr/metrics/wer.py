@@ -347,7 +347,7 @@ class WER(Metric):
                 tokenized_ref = " ".join([token.text for token in doc_ref])
                 tokenized_hyp = " ".join([token.text for token in doc_hyp])
             words += 1
-            scores += jiwer.compute_measures(tokenized_ref, tokenized_hyp)['wer']
+            scores += jiwer.wer(tokenized_ref, tokenized_hyp)
 
         self.scores = torch.tensor(scores, device=self.scores.device, dtype=self.scores.dtype)
         self.words = torch.tensor(words, device=self.words.device, dtype=self.words.dtype)

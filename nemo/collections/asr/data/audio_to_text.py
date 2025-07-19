@@ -730,6 +730,46 @@ class AudioToBPEDataset(_AudioTextDataset):
             manifest_parse_func=manifest_parse_func,
         )
 
+class TarredAudioFilter:
+    def __init__(self, collection, iterator):
+        self.iterator = iterator
+        self.collection = collection
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        while True:
+            audio_bytes, audio_filename = next(self.iterator)
+            file_id, _ = os.path.splitext(os.path.basename(audio_filename))
+            if file_id in self.collection.mapping:
+                return audio_bytes, audio_filename
+            
+class TarredAudioLoopOffsets:
+    def __init__(self, collection, iterator):
+
+        self.iterator = iterator
+        self.collection = collection
+        self.current_fn = None
+        self.current_bytes = None
+        self.offset_id = 0
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self.current_fn is None:
+            self.current_bytes, self.current_fn = next(self.iterator)
+            self.offset_id = 0
+        else:
+            offset_list = self.collection.mapping[self.current_fn]
+            if len(offset_list) == self.offset_id + 1:
+                self.current_bytes, self.current_fn = next(self.iterator)
+                self.offset_id = 0
+            else:
+                self.offset_id += 1
+
+        return self.current_bytes, self.current_fn, self.offset_id
 
 @deprecated(
     explanation='Webdataset support will be removed in v2.1.0 versions, please use LhotseSpeechToTextBpeDataset class instead'
@@ -913,52 +953,12 @@ class _TarredAudioToTextDataset(IterableDataset):
         which may make your code hang as one process will finish before the other.
         """
 
-        class TarredAudioFilter:
-            def __init__(self, collection):
-                self.iterator = iterator
-                self.collection = collection
-
-            def __iter__(self):
-                return self
-
-            def __next__(self):
-                while True:
-                    audio_bytes, audio_filename = next(self.iterator)
-                    file_id, _ = os.path.splitext(os.path.basename(audio_filename))
-                    if file_id in self.collection.mapping:
-                        return audio_bytes, audio_filename
-
-        return TarredAudioFilter(self.manifest_processor.collection)
+        return TarredAudioFilter(self.manifest_processor.collection, iterator)
 
     def _loop_offsets(self, iterator):
         """This function is used to iterate through utterances with different offsets for each file."""
 
-        class TarredAudioLoopOffsets:
-            def __init__(self, collection):
-                self.iterator = iterator
-                self.collection = collection
-                self.current_fn = None
-                self.current_bytes = None
-                self.offset_id = 0
-
-            def __iter__(self):
-                return self
-
-            def __next__(self):
-                if self.current_fn is None:
-                    self.current_bytes, self.current_fn = next(self.iterator)
-                    self.offset_id = 0
-                else:
-                    offset_list = self.collection.mapping[self.current_fn]
-                    if len(offset_list) == self.offset_id + 1:
-                        self.current_bytes, self.current_fn = next(self.iterator)
-                        self.offset_id = 0
-                    else:
-                        self.offset_id += 1
-
-                return self.current_bytes, self.current_fn, self.offset_id
-
-        return TarredAudioLoopOffsets(self.manifest_processor.collection)
+        return TarredAudioLoopOffsets(self.manifest_processor.collection, iterator)
 
     def _collate_fn(self, batch):
         return _speech_collate_fn(batch, self.pad_id)

@@ -743,7 +743,8 @@ class TarredAudioFilter:
             audio_bytes, audio_filename = next(self.iterator)
             file_id, _ = os.path.splitext(os.path.basename(audio_filename))
             if file_id in self.collection.mapping:
-                return audio_bytes, audio_filename
+                # return audio_bytes, audio_filename
+                return audio_bytes, file_id
             
 class TarredAudioLoopOffsets:
     def __init__(self, collection, iterator):

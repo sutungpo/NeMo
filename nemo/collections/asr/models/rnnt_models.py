@@ -908,6 +908,8 @@ class EncDecRNNTModel(ASRModel, ASRModuleMixin, ExportableEncDecModel, ASRTransc
         return test_logs
 
     def multi_validation_epoch_end(self, outputs, dataloader_idx: int = 0):
+        if not outputs:
+            return {}
         if self.compute_eval_loss:
             val_loss_mean = torch.stack([x['val_loss'] for x in outputs]).mean()
             val_loss_log = {'val_loss': val_loss_mean}

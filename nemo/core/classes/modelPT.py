@@ -1000,6 +1000,8 @@ class ModelPT(LightningModule, Model):
             # The output is a list of list of dicts, outer list corresponds to dataloader idx
             for dataloader_idx, val_outputs in enumerate(self.validation_step_outputs):
                 # Get prefix and dispatch call to multi epoch end
+                if len(val_outputs) == 0:
+                    continue
                 dataloader_prefix = self.get_validation_dataloader_prefix(dataloader_idx)
                 dataloader_logs = self.multi_validation_epoch_end(val_outputs, dataloader_idx=dataloader_idx)
 
